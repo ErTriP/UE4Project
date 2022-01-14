@@ -37,9 +37,13 @@ void ABaseGunC::StartFire(FVector EndLocation)
 {
 	if (WeaponStatus == EWeaponStatus::Idle)
 	{
-		HandleFire(EndLocation);
-		GetWorldTimerManager().SetTimer(FireRateTimer, this, &ABaseGunC::StopFire, WeaponData.FireRate, false);
-		WeaponStatus = EWeaponStatus::Firering;
+		if (GetLocalRole() == ROLE_Authority)
+		{
+			HandleFire(EndLocation);
+		}
+			GetWorldTimerManager().SetTimer(FireRateTimer, this, &ABaseGunC::StopFire, WeaponData.FireRate, false);
+			WeaponStatus = EWeaponStatus::Firering;
+		
 	}
 }
 
@@ -61,7 +65,8 @@ void ABaseGunC::HandleFire_Implementation(FVector EndLocation)
 		ECC_WorldDynamic
 	))
 	{
-		UGameplayStatics::ApplyDamage(HitResult.GetActor(), WeaponData.Damage, GetInstigatorController(), this, WeaponData.DamageType);
+		const FDamageEvent DamageEvent(WeaponData.DamageType);
+		HitResult.Actor->TakeDamage(WeaponData.Damage, DamageEvent , GetInstigatorController(), this);
 		FString healthMessage = FString::Printf(
 			TEXT("%s"), *HitResult.GetActor()->GetFName().ToString());
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);

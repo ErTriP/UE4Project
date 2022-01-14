@@ -79,19 +79,17 @@ void APracticeCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 void APracticeCharacter::SetCurrentHealth(float healthValue)
 {
-	OnHealthUpdate();
-	if (GetLocalRole() == ROLE_Authority)
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black,"/////////////////////////////////////////////////////");
+	if(GetLocalRole() == ROLE_Authority)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,"/////////////////////////////////////////////////////");
 		CurrentHealth = FMath::Clamp(healthValue, 0.f, MaxHealth);
 		OnHealthUpdate();
 	}
-}
-
-void APracticeCharacter::TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
-                                     class AController* InstigatedBy, AActor* DamageCauser)
-{
-	float damageApplied = CurrentHealth - Damage;
-	SetCurrentHealth(damageApplied);
+	if (IsLocallyControlled())
+	{
+		OnHealthUpdate();
+	}
 }
 
 void APracticeCharacter::OnResetVR()
@@ -109,7 +107,7 @@ void APracticeCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Loc
 	StopJumping();
 }
 
-void APracticeCharacter::OnHealthUpdate()
+void APracticeCharacter::OnHealthUpdate() const
 {
 	if (IsLocallyControlled())
 	{
@@ -133,7 +131,7 @@ void APracticeCharacter::OnHealthUpdate()
 
 void APracticeCharacter::Fire()
 {
-	FVector EndLocation = GetFollowCamera()->GetComponentLocation() + FVector(0, 0, 150) + GetFollowCamera()->GetForwardVector() * 3000;
+	FVector EndLocation = GetFollowCamera()->GetComponentLocation() + GetFollowCamera()->GetForwardVector() * 3000;
 	Gun->StartFire(EndLocation);
 }
 
@@ -176,5 +174,20 @@ void APracticeCharacter::BeginPlay()
 	Super::BeginPlay();
 	Gun = GetWorld()->SpawnActor<ABaseGunC>(ABaseGunC::StaticClass());
 	Gun->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale, "GunSocket");
-	OnTakeAnyDamage.AddDynamic(this, &APracticeCharacter::TakeDamage);
+}
+
+float APracticeCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		FString healthMessage = FString::Printf(
+				TEXT("%s Taken %f Damage"), *GetFName().ToString(), Damage);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, healthMessage);
+		float damageApplied = CurrentHealth - Damage;
+		SetCurrentHealth(damageApplied);
+		return  damageApplied;
+	}
+	return  Damage;
+	
 }

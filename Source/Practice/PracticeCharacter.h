@@ -45,18 +45,13 @@ public:
 	UFUNCTION(BlueprintPure, Category="Health")
 	FORCEINLINE float GetCurrentHealth() const { return CurrentHealth; }
 
-	UFUNCTION(BlueprintCallable, Category="Health")
+	UFUNCTION(BlueprintCallable, Category ="Health")
 	void SetCurrentHealth(float healthValue);
 
-	UFUNCTION(BlueprintCallable, Category = "Health")
-	void TakeDamage( AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser );
-
-
-
-
+	
+	
 protected:
-
-
+	
 	void OnResetVR();
 
 	void MoveForward(float Value);
@@ -71,19 +66,20 @@ protected:
 
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 	
-	void OnHealthUpdate();
-
 	void Fire();
-
-protected:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
+	
+	void OnHealthUpdate() const;
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	virtual void BeginPlay() override;
+	
+	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
+		AActor* DamageCauser) override;
 };
 
