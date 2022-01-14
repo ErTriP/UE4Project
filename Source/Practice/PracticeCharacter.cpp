@@ -64,6 +64,17 @@ void APracticeCharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APracticeCharacter::Fire);
 }
 
+void APracticeCharacter::SpawnWeapon()
+{
+	Gun = GetWorld()->SpawnActor<ABaseGunC>(ABaseGunC::StaticClass());
+	OnGunEquip();
+}
+
+
+void APracticeCharacter::OnRep_Gun()
+{
+	OnGunEquip();
+}
 
 void APracticeCharacter::OnRep_CurrentHealth()
 {
@@ -75,14 +86,13 @@ void APracticeCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(APracticeCharacter, CurrentHealth)
+	DOREPLIFETIME(APracticeCharacter, Gun)
 }
 
 void APracticeCharacter::SetCurrentHealth(float healthValue)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black,"/////////////////////////////////////////////////////");
 	if(GetLocalRole() == ROLE_Authority)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,"/////////////////////////////////////////////////////");
 		CurrentHealth = FMath::Clamp(healthValue, 0.f, MaxHealth);
 		OnHealthUpdate();
 	}
@@ -129,10 +139,21 @@ void APracticeCharacter::OnHealthUpdate() const
 	}
 }
 
+void APracticeCharacter::OnGunEquip()
+{
+	if (Gun)
+	{
+		FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, true);
+	    Gun->StaticMeshComp->AttachToComponent(GetMesh(), AttachmentTransformRules , "GunSocket");
+	    Gun->SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
+	    Gun->SetOwner(this);
+    }
+
+}
+
 void APracticeCharacter::Fire()
 {
-	FVector EndLocation = GetFollowCamera()->GetComponentLocation() + GetFollowCamera()->GetForwardVector() * 3000;
-	Gun->StartFire(EndLocation);
+	Gun->StartFire();
 }
 
 void APracticeCharacter::TurnAtRate(float Rate)
@@ -172,8 +193,10 @@ void APracticeCharacter::MoveRight(float Value)
 void APracticeCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Gun = GetWorld()->SpawnActor<ABaseGunC>(ABaseGunC::StaticClass());
-	Gun->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale, "GunSocket");
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		SpawnWeapon();
+	}
 }
 
 float APracticeCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,

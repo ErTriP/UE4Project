@@ -18,9 +18,6 @@ class APracticeCharacter : public ACharacter
 	class UCameraComponent* FollowCamera;
 public:
 	APracticeCharacter();
-
-	UPROPERTY(EditAnywhere)
-	ABaseGunC* Gun;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -34,6 +31,12 @@ public:
 	UPROPERTY(ReplicatedUsing=OnRep_CurrentHealth)
 	float CurrentHealth;
 
+	UPROPERTY(ReplicatedUsing = OnRep_Gun)
+	ABaseGunC* Gun;
+
+	UFUNCTION()
+	void OnRep_Gun();
+	
 	UFUNCTION()
 	void OnRep_CurrentHealth();
 	
@@ -71,8 +74,12 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
+
+	void SpawnWeapon();
 	
 	void OnHealthUpdate() const;
+
+	void OnGunEquip();
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 

@@ -14,6 +14,7 @@ struct FWeaponData
 	int32 CurrAmmo;
 	float Damage;
 	float FireRate;
+	float Range;
 	TSubclassOf<UDamageType> DamageType;
 
 	FWeaponData()
@@ -22,6 +23,7 @@ struct FWeaponData
 		CurrAmmo = MaxAmmo;
 		Damage = 10.f;
 		FireRate = 0.35;
+		Range = 6000.f;
 	}
 };
 
@@ -39,13 +41,13 @@ class PRACTICE_API ABaseGunC : public AActor
 {
 	GENERATED_BODY()
 
+	
+public:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* StaticMeshComp;
 
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* SphereComp;	
-	
-public:
 		
 	ABaseGunC();
 
@@ -53,7 +55,7 @@ public:
 	EWeaponStatus WeaponStatus;
 
 	UFUNCTION(BlueprintCallable, Category="Gameplay")
-	void StartFire(FVector EndLocation);
+	void StartFire();
 	
 protected:
 
@@ -63,7 +65,7 @@ protected:
 	void StopFire();  
 
 	UFUNCTION(Server, Reliable)
-	void HandleFire(FVector EndLocation);
+	void HandleFire();
 
 	FTimerHandle FireRateTimer;
 	
