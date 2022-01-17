@@ -39,6 +39,8 @@ APracticeCharacter::APracticeCharacter()
 
 	MaxHealth = 100;
 	CurrentHealth = MaxHealth;
+
+	InventorySystem = CreateDefaultSubobject<UInventorySystem>(TEXT("System"));
 }
 
 

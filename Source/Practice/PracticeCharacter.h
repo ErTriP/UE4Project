@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InventorySystem.h"
 #include "GameFramework/Character.h"
 #include "PracticeCharacter.generated.h"
 
@@ -51,6 +52,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category ="Health")
 	void SetCurrentHealth(float healthValue);
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UInventorySystem* InventorySystem;
 	
 	
 protected:
